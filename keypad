@@ -1,1 +1,68 @@
+#include <Keypad.h>
+#include <Servo.h> 
 
+const byte ROWS = 4; //four rows
+const byte COLS = 4; //four columns
+//define the cymbols on the buttons of the keypads
+char hexaKeys[ROWS][COLS] = {
+  {'D','C','B','A'},
+  {'#','9','6','3'},
+  {'0','8','5','2'},
+  {'*','7','4','1'}
+};
+byte rowPins[ROWS] = {9, 8, 7, 6}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {5, 4, 3, 2}; //connect to the column pinouts of the keypad
+
+//initialize an instance of class NewKeypad
+Keypad customKeypad = Keypad( makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
+Servo SG90;           //motor 객체를 선언
+
+String S;    // 키패드 입력받을 변수
+String PSWD; // 패스워드
+int sg90 = 10; // SG90 D10 핀에 연결
+int Angle=0; 
+int buzzer=12; // 부저 D12핀에 연결
+
+void setup(){
+  Serial.begin(9600);
+  SG90.attach(sg90);      
+  pinMode(buzzer, OUTPUT);
+
+}
+  
+void loop(){
+  digitalWrite(buzzer, LOW);
+  PSWD = "1234#" ;  // 비밀번호 설정
+  char Key = customKeypad.getKey(); //입력받은 키 저장
+  
+  if( Key ){
+    S += Key; //Key를 문자열에 저장
+  }
+
+  if( Key == '#'){  // '#'이 눌릴경우 비밀번호와 비교하여 이후 동작
+    Serial.print("PSWD = ");
+    Serial.print(S);
+    
+    if( S==PSWD ){
+       Serial.println("     [ O ]");
+       for(Angle = 0; Angle < 180; Angle++){
+          SG90.write(Angle);
+          delay(10);
+       }
+       delay(2000);
+       for(Angle = 180; Angle > 0; Angle--){
+          SG90.write(Angle);
+          delay(10);
+       }
+    }
+
+    else {
+      Serial.println("     [ X ]");
+      digitalWrite(buzzer, HIGH);
+      delay(1000);
+    }
+      S = "";  // 다음 동작을 위해 저장값 초기화
+      
+  }
+
+}
