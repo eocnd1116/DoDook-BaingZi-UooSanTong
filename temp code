@@ -1,0 +1,289 @@
+int pinNum = A0;
+int buggerPN = 8;
+int aaa=0;
+
+void setup() {
+  pinMode(pinNum, INPUT);
+  pinMode(buggerPN, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  aaa = analogRead(pinNum);
+  int convert = map(aaa, 0, 1024, 0, 255);
+
+  Serial.println(convert);
+
+  /* if ( aaa == analogRead(pinNum) ) {
+    tone(buggerPN, 261.686);
+  }
+  else {
+    noTone(buggerPN);
+  } */
+  
+  
+  delay(1000);
+}
+
+000000000000000000000000000000000000000000000000000000000000000000000
+
+
+#include <LiquidCrystal.h>
+
+const int rs=8, en=9, d4=4, d5=5, d6=6, d7=7;
+
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
+
+
+void setup() {
+
+  lcd.begin(16, 2);
+
+  lcd.clear();
+
+  lcd.print("LiquidCrystal");
+
+  lcd.setCursor(0,1);
+
+  lcd.print("Hello rnjswns");
+
+}
+
+
+
+void loop() {
+
+}
+
+
+
+--------------------------------------------------------------------
+
+
+
+/*#include<LiquidCrystal.h>
+
+
+
+// LCD1 (9, 10, 11, 12);
+
+
+
+int pinNum = A0;
+
+int pinNum1 = A1;
+
+int buggerPN = 8;
+
+int aaa=0;
+
+int sss=0;
+
+
+
+void setup() {
+
+  //LCD1.begin(16, 2);
+
+  //LCD1.print("Hello Would")
+
+  
+
+  pinMode(pinNum, INPUT);
+
+  pinMode(pinNum1, INPUT);
+
+  pinMode(buggerPN, OUTPUT);
+
+  Serial.begin(9600);
+
+}
+
+
+
+void loop() {
+
+  aaa = analogRead(pinNum);
+
+  sss = analogRead(pinNum1);
+
+  int convert = map(aaa, 0, 1024, 0, 255);
+
+  int convert2 = map(sss, 0, 1024, 0, 255);
+
+
+
+  Serial.print(convert);
+
+  Serial.print(" / ");
+
+  Serial.println(convert2);
+
+
+
+  //lcd.print("eee");
+
+
+
+  if ( aaa == analogRead(pinNum) ) {
+
+  }
+
+  else {
+
+    noTone(buggerPN);
+
+  }
+
+  
+
+  
+
+  delay(1000);
+
+}*/
+
+
+0000000000000000000000000000000000000000000000000000000000000
+
+int Led = 3; // LED를 3번핀 설정
+
+int FSRsensor = A0; // 센서값을 아나로그 A0핀 설정
+
+int value = 0; // loop에서 사용할 변수 설정
+
+​
+
+void setup()
+
+{
+
+pinMode(Led, OUTPUT); // 핀모드 LED를 출력으로 설정
+
+Serial.begin(9600); // 시리얼 통신 설정 (보드레이트 9600)
+
+}
+
+​
+
+void loop()
+
+{
+
+value = analogRead(FSRsensor); // 센서값을 아나로그로 읽어 value 변수에 저장
+
+Serial.println(value); // 센서값을 시리얼 모니터에 출력
+
+value = map(value, 0, 1023, 0, 255); // value에 저장된 센서값(0~1023)을 PWM값 0~255의 범위로 변환
+
+analogWrite(Led, value); // 변환된 PWM값으로 LED를 켠다 (변하는 값으로 밝기를 조절)
+
+delay(1000); // 1초의 딜레이
+
+}
+
+
+000000000000000000000000000000000000000000000000000000000
+
+
+int pinNum = A0;
+int buggerPN = 8;
+int aaa=0;
+
+void setup() {
+  pinMode(pinNum, INPUT);
+  pinMode(buggerPN, OUTPUT);
+  Serial.begin(19200);
+}
+
+void loop() {
+  if ( aaa == analogRead(pinNum) )
+    tone(buggerPN, 261.686);
+  else {
+    noTone(buggerPN);
+  }
+  aaa = analogRead(pinNum);
+  Serial.println(aaa);
+  delay(10);
+}
+
+
+
+00000000000000000000000000000000000000000000000000000000000
+
+
+
+#include <Keypad.h>
+#include <Servo.h> 
+
+const byte ROWS = 4; //four rows
+const byte COLS = 4; //four columns
+//define the cymbols on the buttons of the keypads
+char hexaKeys[ROWS][COLS] = {
+  {'D','C','B','A'},
+  {'#','9','6','3'},
+  {'0','8','5','2'},
+  {'*','7','4','1'}
+};
+byte rowPins[ROWS] = {9, 8, 7, 6}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {5, 4, 3, 2}; //connect to the column pinouts of the keypad
+
+//initialize an instance of class NewKeypad
+Keypad customKeypad = Keypad( makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
+Servo SG90;           //motor 객체를 선언
+
+String S;    // 키패드 입력받을 변수
+String PSWD; // 패스워드
+int sg90 = 10; // SG90 D10 핀에 연결
+int Angle=0; 
+int buzzer=12; // 부저 D12핀에 연결
+
+void setup(){
+  Serial.begin(9600);
+  SG90.attach(sg90);      
+  pinMode(buzzer, OUTPUT);
+
+}
+  
+void loop(){
+  digitalWrite(buzzer, LOW);
+  PSWD = "1234#" ;  // 비밀번호 설정
+  char Key = customKeypad.getKey(); //입력받은 키 저장
+  
+  if( Key ){
+    S += Key; //Key를 문자열에 저장
+  }
+
+  if( Key == '#'){  // '#'이 눌릴경우 비밀번호와 비교하여 이후 동작
+    Serial.print("PSWD = ");
+    Serial.print(S);
+    
+    if( S==PSWD ){
+       Serial.println("     [ O ]");
+       for(Angle = 0; Angle < 180; Angle++){
+          SG90.write(Angle);
+          delay(10);
+       }
+       delay(2000);
+       for(Angle = 180; Angle > 0; Angle--){
+          SG90.write(Angle);
+          delay(10);
+       }
+    }
+
+    else {
+      Serial.println("     [ X ]");
+      digitalWrite(buzzer, HIGH);
+      delay(1000);
+    }
+      S = "";  // 다음 동작을 위해 저장값 초기화
+      
+  }
+
+}
+
+
+0000000000000000000000000000000000000000000000000000000000000000000000000
+
+
