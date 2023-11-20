@@ -1,0 +1,184 @@
+#include <Keypad.h>
+#include <Servo.h> 
+#include <LiquidCrystal.h>
+
+int Press_PN = A0; //압력센서 위치
+int Press_PN2 = A1;
+int Press_PN3 = A2;
+int Press_PN4 = A3;
+int Press_PN5 = A4;
+int Press_PN6 = A5;
+
+int Buzzer_PN = 10; //부저 위치
+
+//압력센서 변수
+int aaa = 0;
+int aab = 0;
+
+//키패드 변수
+const byte ROWS = 4; //기로?
+const byte COLS = 4; //세로?
+
+//키패드 배열
+char hexaKeys[ROWS][COLS] = {
+  {'D','C','B','A'},
+  {'#','9','6','3'},
+  {'0','8','5','2'},
+  {'*','7','4','1'}
+}; 
+
+//키패드 위치
+byte rowPins[ROWS] = {9, 8, 7, 6};
+byte colPins[COLS] = {5, 4, 3, 2 };
+
+Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
+
+//비밀번호 저잘소 (배열)
+char boxPasswords[6][4] = {
+  {'\0', '\0', '\0', '\0'}, // 비번 1
+  {'\0', '\0', '\0', '\0'}, // 비번 2
+  {'\0', '\0', '\0', '\0'}, // 비번 3
+  {'\0', '\0', '\0', '\0'}, // 비번 4
+  {'\0', '\0', '\0', '\0'}, // 비번 5
+  {'\0', '\0', '\0', '\0'}  // 비번 6
+};
+
+
+char box = '0';
+
+bool setPassword = false;
+
+
+
+
+//디스플레이 변수
+const int rs=8, en=9, d4=4, d5=5, d6=6, d7=7;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
+//비밀번호 확인으로 추정
+bool checkPassword(char enteredPassword[4], char boxPassword[4]) {
+  for (int i = 0; i < 4; i++) {
+    if (enteredPassword[i] != boxPassword[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(Press_PN, INPUT);
+  pinMode(Press_PN2, INPUT);
+  pinMode(Buzzer_PN, OUTPUT);
+  lcd.begin(16, 2);
+  lcd.clear();
+  lcd.print("LiquidCrystal");
+  lcd.setCursor(0,1);
+  lcd.print("Hello rnjswns");
+}
+
+void loop() {
+  char key = customKeypad.getKey();
+
+  //비번을 저잘할 저장소 선택 및 중복 확인
+  if (key) {
+    if (key >= '1' && key <= '6') {
+      box = key;
+      Serial.print("선택한 저장소: ");
+      Serial.println(box);
+      if (boxPasswords[box - '1'][0] != '\0') {
+        setPassword = true;
+        Serial.println("비밀번호가 이미 설정되어 있습니다. 새 비밀번호로 덮어씁니다.");
+      } else {
+        setPassword = false;
+      }
+    }
+
+    //비밀번호 설정
+    else if (key == 'A' && box != '0' && !setPassword) {
+      Serial.println("비밀번호 4자리 입력:");
+      for (int i = 0; i < 4; i++) {
+        key = customKeypad.getKey();
+        while (!(key >= '0' && key <= '9')) {
+          key = customKeypad.getKey();
+        }
+        boxPasswords[box - '1'][i] = key;
+        delay(500);
+        Serial.print(boxPasswords[box - '1'][i]);
+        Serial.print('*');
+      }
+      Serial.println();
+      Serial.println("비밀번호 설정 완료");
+      setPassword = true;
+    }
+
+    //비밀번호 입력
+    else if (key == 'B' && box != '0') {
+      char enteredPassword[4];
+      Serial.println("비밀번호를 입력해주세요.:");
+      for (int i = 0; i < 4; i++) {
+        key = customKeypad.getKey();
+        while (!(key >= '0' && key <= '9')) {
+          key = customKeypad.getKey();
+        }
+        enteredPassword[i] = key;
+        delay(500);
+        Serial.print(enteredPassword[i]);
+        Serial.print('*');
+      }
+      Serial.println();
+
+
+
+      //비밀번호 확인 및 장금 해제
+      if (checkPassword(enteredPassword, boxPasswords[box - '1'])) {
+        Serial.println("박스 열림");
+        digitalWrite(10, HIGH);
+        delay(2000);
+        digitalWrite(10, LOW);
+        resetPassword(boxPasswords[box - '1']); // 해당 상자의 비밀번호 초기화
+      } else {
+        Serial.println("올바르지 않은 비밀번호. 박스 잠금 유지");
+        //C += -1;
+        //C = string(C);
+        //Serial.println("남은 기뢰횟수 %s", C);
+      }
+      setPassword = false;
+    }
+  }
+
+
+  //압력센서 및 부저
+  aaa = analogRead(Press_PN);
+  int convert = map(aaa, 0, 1024, 0, 255);
+  Serial.print(convert);
+
+  if ( 0 == analogRead(Press_PN) ) {
+    tone(Buzzer_PN, 261.686);
+  }
+  else {
+    noTone(Buzzer_PN);
+  }
+
+  /*aab = analogRead(Press_PN2);
+  int convert2 = map(aab, 0, 1024, 0, 255);
+  Serial.print(convert2);
+
+  if ( 0 == analogRead(Press_PN2) ) {
+    tone(Buzzer_PN, 261.686);
+  }
+  else {
+    noTone(Buzzer_PN);
+  }*/
+
+  //Serial.print(convert, convert2);
+
+}
+
+//비밀번호 리셋
+void resetPassword(char boxPassword[4]) {
+  for (int i = 0; i < 4; i++) {
+    boxPassword[i] = '\0';
+  }
+}
