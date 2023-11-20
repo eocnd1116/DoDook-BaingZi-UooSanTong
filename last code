@@ -2,12 +2,12 @@
 #include <Servo.h> 
 #include <LiquidCrystal.h>
 
-int Press_PN = A0; //압력센서 위치
-int Press_PN2 = A1;
-int Press_PN3 = A2;
-int Press_PN4 = A3;
-int Press_PN5 = A4;
-int Press_PN6 = A5;
+int Press_PN = 54; //압력센서 위치 //A0
+int Press_PN2 = 55; //A1
+int Press_PN3 = 56; //A2
+int Press_PN4 = 57; //A3
+int Press_PN5 = 58; //A4
+int Press_PN6 = 59; //A5
 
 int Buzzer_PN = 10; //부저 위치
 
@@ -79,80 +79,11 @@ void setup() {
 }
 
 void loop() {
-  char key = customKeypad.getKey();
-
-  //비번을 저잘할 저장소 선택 및 중복 확인
-  if (key) {
-    if (key >= '1' && key <= '6') {
-      box = key;
-      Serial.print("선택한 저장소: ");
-      Serial.println(box);
-      if (boxPasswords[box - '1'][0] != '\0') {
-        setPassword = true;
-        Serial.println("비밀번호가 이미 설정되어 있습니다. 새 비밀번호로 덮어씁니다.");
-      } else {
-        setPassword = false;
-      }
-    }
-
-    //비밀번호 설정
-    else if (key == 'A' && box != '0' && !setPassword) {
-      Serial.println("비밀번호 4자리 입력:");
-      for (int i = 0; i < 4; i++) {
-        key = customKeypad.getKey();
-        while (!(key >= '0' && key <= '9')) {
-          key = customKeypad.getKey();
-        }
-        boxPasswords[box - '1'][i] = key;
-        delay(500);
-        Serial.print(boxPasswords[box - '1'][i]);
-        Serial.print('*');
-      }
-      Serial.println();
-      Serial.println("비밀번호 설정 완료");
-      setPassword = true;
-    }
-
-    //비밀번호 입력
-    else if (key == 'B' && box != '0') {
-      char enteredPassword[4];
-      Serial.println("비밀번호를 입력해주세요.:");
-      for (int i = 0; i < 4; i++) {
-        key = customKeypad.getKey();
-        while (!(key >= '0' && key <= '9')) {
-          key = customKeypad.getKey();
-        }
-        enteredPassword[i] = key;
-        delay(500);
-        Serial.print(enteredPassword[i]);
-        Serial.print('*');
-      }
-      Serial.println();
-
-
-
-      //비밀번호 확인 및 장금 해제
-      if (checkPassword(enteredPassword, boxPasswords[box - '1'])) {
-        Serial.println("박스 열림");
-        digitalWrite(10, HIGH);
-        delay(2000);
-        digitalWrite(10, LOW);
-        resetPassword(boxPasswords[box - '1']); // 해당 상자의 비밀번호 초기화
-      } else {
-        Serial.println("올바르지 않은 비밀번호. 박스 잠금 유지");
-        //C += -1;
-        //C = string(C);
-        //Serial.println("남은 기뢰횟수 %s", C);
-      }
-      setPassword = false;
-    }
-  }
-
 
   //압력센서 및 부저
   aaa = analogRead(Press_PN);
   int convert = map(aaa, 0, 1024, 0, 255);
-  Serial.print(convert);
+  Serial.println(convert);
 
   if ( 0 == analogRead(Press_PN) ) {
     tone(Buzzer_PN, 261.686);
@@ -161,24 +92,4 @@ void loop() {
     noTone(Buzzer_PN);
   }
 
-  /*aab = analogRead(Press_PN2);
-  int convert2 = map(aab, 0, 1024, 0, 255);
-  Serial.print(convert2);
-
-  if ( 0 == analogRead(Press_PN2) ) {
-    tone(Buzzer_PN, 261.686);
-  }
-  else {
-    noTone(Buzzer_PN);
-  }*/
-
-  //Serial.print(convert, convert2);
-
-}
-
-//비밀번호 리셋
-void resetPassword(char boxPassword[4]) {
-  for (int i = 0; i < 4; i++) {
-    boxPassword[i] = '\0';
-  }
 }
