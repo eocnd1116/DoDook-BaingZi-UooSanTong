@@ -1,6 +1,7 @@
 // 라이브러리 선언 //
 #include <Keypad.h>
-#include <LiquidCrystal.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 
 
 // ====================================================================
@@ -11,7 +12,17 @@ int pp_list[]={0,0,0,0,0,0};
 int ppAfter[]={0,0,0,0,0,0};
 
 // 디스플레이 변수 초기화 //
-LiquidCrystal lcd(15, 14, 12, 11, 10, 9);
+LiquidCrystal_I2C lcd(0x27,16,2);
+char ct_cd [] = {
+	B10101,
+	B01110,
+	B11011,
+	B00100,
+	B00100,
+	B11011,
+	B01110,
+	B10101
+}
 
 // ====================================================================
 
@@ -24,11 +35,14 @@ void setup() {
   for ( int i=54; i<=59; i++) { pinMode(i, INPUT); } 
 
   // 디스플레이 세팅 //
-  lcd.begin(16, 2);
-  lcd.clear();
-  lcd.print("LiquidCrystal");
-  lcd.setCursor(0,1);
-  lcd.print("Hello rnjswns");
+  lcd.init();
+  lcd.backlight();
+  
+  lcd.print("★ Welcome ★");
+  lcd.write(0);
+  lcd.setCursor(0, 1);
+  lcd.print("press # to start");
+  lcd.creatChar(0, ct_cd)
 }
 
 
