@@ -13,16 +13,29 @@ int ppAfter[]={0,0,0,0,0,0};
 
 // 디스플레이 변수 초기화 //
 LiquidCrystal_I2C lcd(0x27,16,2);
-char ct_cd [] = {
-	B10101,
-	B01110,
-	B11011,
+int dpType=-1; //현재 출력타입
+int dpTC=0;    //출력타입 변경 요청
+char ct_music [] = {
+  B00000,
 	B00100,
-	B00100,
-	B11011,
-	B01110,
-	B10101
-}
+  B00110,
+  B00101,
+  B00101,
+  B11100,
+  B11100,
+  B00000
+};
+char ct_arrow [] = {
+  B00000,
+  B01000,
+  B01100,
+  B01110,
+  B01110,
+  B01100,
+  B01000,
+  B00000
+};
+
 
 // ====================================================================
 
@@ -37,12 +50,9 @@ void setup() {
   // 디스플레이 세팅 //
   lcd.init();
   lcd.backlight();
-  
-  lcd.print("★ Welcome ★");
-  lcd.write(0);
-  lcd.setCursor(0, 1);
-  lcd.print("press # to start");
-  lcd.creatChar(0, ct_cd)
+  dpTC=3;
+  lcd.createChar(0, ct_music);
+  lcd.createChar(1, ct_arrow);
 }
 
 
@@ -61,9 +71,45 @@ void loop() {
     ppAfter[i-54]=map(analogRead(i), 0, 1024, 0, 255);
   }
 
-  //debuging
-  for(int i=0; i<6; i++) {
-    Serial.print(pp_list[i]);
+
+  // 디스플레이 //
+  if ( dpType != dpTC ) {
+    switch(dpTC) {
+      case 0:
+        lcd.setCursor(2, 0);
+        lcd.write(0);
+        lcd.print(" Welcome! ");
+        lcd.write(0);
+        lcd.setCursor(0, 1);
+        lcd.print("Press A To Start");
+        break;
+      case 1:
+        lcd.setCursor(0, 0);
+        lcd.print("Select aaaa");
+        lcd.setCursor(1, 1);
+        lcd.write(1);
+        lcd.print("Yes  No");
+        break;
+      case 2:
+        lcd.setCursor(1, 0);
+        lcd.write(1);
+        lcd.print("Put in");
+        lcd.setCursor(1, 1);
+        lcd.print("Take out");
+        break;
+      case 3:
+        lcd.setCursor(1, 0);
+        lcd.print("Put in");
+        lcd.setCursor(1, 1);
+        lcd.write(1);
+        lcd.print("Take out");
+        break;
+    }
+    dpType = dpTC;
   }
-  Serial.println("");
+
+
+  // 키패드 //
+  
+
 }
