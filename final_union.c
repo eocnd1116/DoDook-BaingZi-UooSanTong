@@ -9,7 +9,7 @@
 
 // 압력판 변수 초기화 //
 bool pp_list[]={false,false,false,false,false,false};
-int pp_pwd[]={0,0,0,0,0,0};
+String pp_pwd[]={"","","","","",""};
 bool pp_onf[]={false,false,false,false,false,false};
 int ppAfter[]={0,0,0,0,0,0};
 
@@ -22,6 +22,17 @@ const char ct_arrow [] = {B00000,B01000,B01100,B01110,B01110,B01100,B01000,B0000
 
 // 키패드 //
 const byte ROWS = 4;
+const byte COLS = 4;
+char keys[ROWS][COLS] = {
+  {'1','2','3', 'A'},
+  {'4','5','6', 'B'},
+  {'7','8','9', 'C'},
+  {'*','0','#', 'D'}
+};
+byte rowPins[ROWS] = {7,6,5,4};
+byte colPins[COLS] = {3,2,1,0};
+/*e
+const byte ROWS = 4;
 const byte COLS = 3;
 char keys[ROWS][COLS] = {
   {'1','2','3'},
@@ -29,11 +40,11 @@ char keys[ROWS][COLS] = {
   {'7','8','9'},
   {'*','0','#'}
 };
+byte rowPins[ROWS] = {5, 0, 1, 3};
+byte colPins[COLS] = {4, 6, 2};*/
 const char key_l = '*';
 const char key_sel = '*';
 const char key_r = '#';
-byte rowPins[ROWS] = {5, 0, 1, 3};
-byte colPins[COLS] = {4, 6, 2};
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 // ETC. //
@@ -41,6 +52,7 @@ int timer = 0;
 int rTimer = 0;
 int selecter = 0;
 int targetNum = -1;
+int pwdCheak=0;
 
 
 // ====================================================================
@@ -92,10 +104,13 @@ void loop() {
 
   if ( dpType==2 ) {
     for ( int i=54; i<=59; i++) {
-      if ( pp_onf[i-54] != pp_list[i-54] ) {
+      if ( pp_onf[i-54] != pp_list[i-54] && pp_onf[i-54]==false ) {
         selecter=0;
         dpTC=3;
         targetNum=i-54;
+        timer=10;
+        rTimer=0;
+        pp_pwd[targetNum]="";
         Serial.println("PRESS:dpTC chaged 3.  ( '"+String(i-54)+"' cheaking )");
         Serial.println("PRESS:selecter chaged 0.  ( '"+String(i-54)+"' cheaking )");
       }
@@ -129,7 +144,7 @@ void loop() {
         break;
       case 3:
         lcd.setCursor(0, 0);
-        lcd.print("Password.("+String(targetNum)+")");
+        lcd.print("Password.("+String(targetNum+1)+")");
         break;
     }
     dpType = dpTC;
@@ -157,36 +172,90 @@ void loop() {
   char key = keypad.getKey();
   //Print this button to serial monitor
   if (key != NO_KEY){
-    if ( dpType==0 && key==key_sel ) {
-      Serial.println("KEYPAD:dpTC chaged 1.  ( press 'select key' )");
-      dpTC=1;
-      selecter=0;
-      timer=10;
-    } 
-    else if ( dpType==1 ) { //Sel Act
-      if ( key==key_l && selecter ) {
-        selecter=0;
-        lcd.setCursor(6, 1);
-        lcd.print(" ");
-        lcd.setCursor(1, 1);
-        lcd.write(1);
-        Serial.println("KEYPAD:selecter chaged 0.  ( press 'left key' )");
-      }
-      if ( key==key_r && !selecter ) {
-        selecter=1;
-        lcd.setCursor(1, 1);
-        lcd.print(" ");
-        lcd.setCursor(6, 1);
-        lcd.write(1);
-        Serial.println("KEYPAD:selecter chaged 1.  ( press 'right key' )");
-      }
-      if ( key==key_sel ) {
-        if ( !selecter ) {
-          Serial.println("KEYPAD:dpTC chaged 2.  ( press 'select key' )");
-          dpTC=2;
+    switch ( dpType ) {
+      case 0:
+        if ( key==key_sel ) {
+          Serial.println("KEYPAD:dpTC chaged 1.  ( press 'select key' )");
+          dpTC=1;
+          selecter=0;
           timer=10;
+          rTimer=0;
         }
-      }
+        break;
+      case 1:
+        if ( key==key_l && selecter ) {
+          selecter=0;
+          lcd.setCursor(6, 1);
+          lcd.print(" ");
+           lcd.setCursor(1, 1);
+          lcd.write(1);
+          Serial.println("KEYPAD:selecter chaged 0.  ( press 'left key' )");
+        }
+        if ( key==key_r && !selecter ) {
+          selecter=1;
+          lcd.setCursor(1, 1);
+          lcd.print(" ");
+          lcd.setCursor(6, 1);
+          lcd.write(1);
+          Serial.println("KEYPAD:selecter chaged 1.  ( press 'right key' )");
+        }
+        if ( key==key_sel ) {
+          if ( !selecter ) {
+            Serial.println("KEYPAD:dpTC chaged 2.  ( press 'select key' )");
+            dpTC=2;
+            timer=10;
+            rTimer=0;
+          }
+        }
+        break;
+      case 3:
+        if ( pwdCheak == 0 ) {
+          if ( key==key_l || key==key_r ) { //back speace
+            timer=10;
+            rTimer=0;
+            pp_pwd[targetNum].remove(pp_pwd[targetNum].length()-1, 1);
+            Serial.println("KEYPAD:backspeace checking.  ( "+String(key)+"/"+String(pp_pwd[targetNum])+" )");
+            lcd.setCursor(1, 1);
+            lcd.print("               ");
+            lcd.setCursor(1, 1);
+            lcd.print(pp_pwd[targetNum]);
+          }
+          else if ( String(key).toInt()!=0 && pp_pwd[targetNum].length()<8) { //number
+            timer=10;
+            rTimer=0;
+            pp_pwd[targetNum]+=String(key);
+            Serial.println("KEYPAD:pwd checking.  ( "+String(key)+"/"+String(pp_pwd[targetNum])+" )");
+            lcd.setCursor(1, 1);
+            lcd.print(pp_pwd[targetNum]);
+          }
+        }
+
+        if ( key==key_sel ) {
+          if ( pwdCheak == 0 ) {
+            if ( pp_pwd[targetNum].length()>3 ) {
+              dpTC=4;
+              timer=10;
+              rTimer=0;
+            }
+            else {
+              lcd.setCursor(1, 1);
+              lcd.print("               ");
+              lcd.setCursor(1, 1);
+              lcd.print("4-8 letters plz.");
+              pwdCheak=300;
+            }
+          }
+        }
+        if ( pwdCheak ) { 
+          pwdCheak--;
+          if ( pwdCheak==0 ) {
+            lcd.setCursor(1, 1);
+            lcd.print("               ");
+            lcd.setCursor(1, 1);
+            lcd.print(pp_pwd[targetNum]);
+          }
+        }
+        break;
     }
     Serial.println(key);
   }
