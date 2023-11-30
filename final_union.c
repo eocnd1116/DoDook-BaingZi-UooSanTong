@@ -146,6 +146,10 @@ void loop() {
         lcd.setCursor(0, 0);
         lcd.print("Password.("+String(targetNum+1)+")");
         break;
+      case 4:
+        lcd.setCursor(0, 0);
+        lcd.print("Good Bey!!");
+        break;
     }
     dpType = dpTC;
   }
@@ -234,7 +238,7 @@ void loop() {
           if ( pwdCheak == 0 ) {
             if ( pp_pwd[targetNum].length()>3 ) {
               dpTC=4;
-              timer=10;
+              timer=2;
               rTimer=0;
             }
             else {
@@ -246,17 +250,16 @@ void loop() {
             }
           }
         }
-        if ( pwdCheak ) { 
-          pwdCheak--;
-          if ( pwdCheak==0 ) {
-            lcd.setCursor(1, 1);
-            lcd.print("               ");
-            lcd.setCursor(1, 1);
-            lcd.print(pp_pwd[targetNum]);
-          }
-        }
-        break;
     }
     Serial.println(key);
+  }
+  if ( pwdCheak ) { 
+    pwdCheak--;
+    if ( pwdCheak==0 ) {
+      lcd.setCursor(1, 1);
+      lcd.print("               ");
+      lcd.setCursor(1, 1);
+      lcd.print(pp_pwd[targetNum]);
+    }
   }
 }
