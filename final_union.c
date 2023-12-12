@@ -42,9 +42,9 @@ char keys[ROWS][COLS] = {
 };
 byte rowPins[ROWS] = {5, 0, 1, 3};
 byte colPins[COLS] = {4, 6, 2};*/
-const char key_l = '*';
+const char key_l = '8';
 const char key_sel = '*';
-const char key_r = '#';
+const char key_r = '2';
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 // ETC. //
@@ -53,6 +53,8 @@ int rTimer = 0;
 int selecter = 0;
 int targetNum = -1;
 int pwdCheak=0;
+
+String outPwd="";
 
 
 // ====================================================================
@@ -102,7 +104,7 @@ void loop() {
     ppAfter[i-54]=map(analogRead(i), 0, 1024, 0, 255);
   }
 
-  if ( dpType==2 ) {
+  if ( dpType==2 ) { // In
     for ( int i=54; i<=59; i++) {
       if ( pp_onf[i-54] != pp_list[i-54] && pp_onf[i-54]==false ) {
         selecter=0;
@@ -116,6 +118,19 @@ void loop() {
       }
     }
   }
+  if ( dpType==5 ) { //Out
+    for ( int i=54; i<=59; i++) {
+      if ( pp_onf[i-54] != pp_list[i-54] && pp_onf[i-54]==true ) {
+        outPwd="";
+        selecter=0;
+        dpTC=6;
+        targetNum=i-54;
+        timer=10;
+        rTimer=0;
+        Serial.println("PRESS:dpTC chaged 6.  ( '"+String(i-54)+"' cheaking )");
+      }
+    }
+  }
   
 
 
@@ -124,6 +139,7 @@ void loop() {
     lcd.clear();
     switch(dpTC) {
       case 0:
+        selecter=0;
         lcd.setCursor(2, 0);
         lcd.write(0);
         lcd.print(" Welcome! ");
@@ -143,12 +159,29 @@ void loop() {
         lcd.print("Put Umbrella.");
         break;
       case 3:
+      case 6:
         lcd.setCursor(0, 0);
         lcd.print("Password.("+String(targetNum+1)+")");
         break;
       case 4:
         lcd.setCursor(0, 0);
-        lcd.print("Good Bey!!");
+        lcd.print("Good Bye!!");
+        break;
+      case 5:
+        selecter=0;
+        lcd.setCursor(0, 0);
+        lcd.print("Want Umbrella.");
+        lcd.setCursor(1, 1);
+        lcd.write(1);
+        lcd.print("1 2 3 4 5 6");
+        break;
+      case 7:
+        lcd.setCursor(0, 0);
+        lcd.print("Fail Passward..");
+        break;
+      case 8:
+        lcd.setCursor(0, 0);
+        lcd.print("No Umbrella..");
         break;
     }
     dpType = dpTC;
@@ -204,9 +237,16 @@ void loop() {
           Serial.println("KEYPAD:selecter chaged 1.  ( press 'right key' )");
         }
         if ( key==key_sel ) {
-          if ( !selecter ) {
+          Serial.println(selecter);
+          if ( !selecter ) { //IN
             Serial.println("KEYPAD:dpTC chaged 2.  ( press 'select key' )");
             dpTC=2;
+            timer=10;
+            rTimer=0;
+          }
+          else { //OUT
+            Serial.println("KEYPAD:dpTC chaged 5.  ( press 'select key' )");
+            dpTC=5;
             timer=10;
             rTimer=0;
           }
@@ -233,10 +273,10 @@ void loop() {
             lcd.print(pp_pwd[targetNum]);
           }
         }
-
         if ( key==key_sel ) {
           if ( pwdCheak == 0 ) {
             if ( pp_pwd[targetNum].length()>3 ) {
+              pp_onf[targetNum]=true;
               dpTC=4;
               timer=2;
               rTimer=0;
@@ -250,6 +290,89 @@ void loop() {
             }
           }
         }
+        break;
+      case 5:
+        if ( key==key_l && selecter>0 ) {
+          selecter--;
+          lcd.setCursor(3+selecter*2, 1);
+          lcd.print(" ");
+          lcd.setCursor(1+selecter*2, 1);
+          lcd.write(1);
+          Serial.println("KEYPAD:selecter chaged 0.  ( press 'left key' )");
+        }
+        if ( key==key_r && selecter<5 ) {
+          selecter++;
+          lcd.setCursor(-1+selecter*2, 1);
+          lcd.print(" ");
+          lcd.setCursor(1+selecter*2, 1);
+          lcd.write(1);
+          Serial.println("KEYPAD:selecter chaged 1.  ( press 'right key' )");
+        }
+        if ( key==key_sel ) {
+          Serial.println(selecter);
+          if ( pp_onf[selecter] ) { //있음
+            outPwd="";
+            dpTC=6;
+            targetNum=selecter;
+            timer=10;
+            rTimer=0;
+            selecter=0;
+            Serial.println("PRESS:dpTC chaged 6.  ( '"+String(selecter)+"' cheaking )");
+          }
+          else { //없음
+            dpTC=8;
+            timer=2;
+            rTimer=0;
+          }
+        }
+        break;
+      case 6:
+        if ( pwdCheak == 0 ) {
+          if ( key==key_l || key==key_r ) { //back speace
+            timer=10;
+            rTimer=0;
+            outPwd.remove(outPwd.length()-1, 1);
+            Serial.println("KEYPAD:backspeace checking.  ( "+String(key)+"/"+String(outPwd)+" )");
+            lcd.setCursor(1, 1);
+            lcd.print("               ");
+            lcd.setCursor(1, 1);
+            lcd.print(outPwd);
+          }
+          else if ( String(key).toInt()!=0 && outPwd.length()<8) { //number
+            timer=10;
+            rTimer=0;
+            outPwd+=String(key);
+            Serial.println("KEYPAD:pwd checking.  ( "+String(key)+"/"+String(outPwd)+" )");
+            lcd.setCursor(1, 1);
+            lcd.print(outPwd);
+          }
+        }
+        if ( key==key_sel ) {
+          if ( pwdCheak == 0 ) {
+            if ( outPwd.length()>3 ) {
+              if ( outPwd==pp_pwd[targetNum] ) {
+                pp_onf[targetNum]=false;
+                pp_pwd[targetNum]="";
+                dpTC=4;
+                timer=2;
+                rTimer=0;
+              }
+              else {
+                dpTC=7;
+                timer=2;
+                rTimer=0;
+              }
+            }
+            else {
+              lcd.setCursor(1, 1);
+              lcd.print("               ");
+              lcd.setCursor(1, 1);
+              lcd.print("4-8 letters plz.");
+              pwdCheak=300;
+            }
+          }
+        }
+        break;
     }
     Serial.println(key);
   }
@@ -262,4 +385,5 @@ void loop() {
       lcd.print(pp_pwd[targetNum]);
     }
   }
+    Serial.println(pp_list[4]);
 }
