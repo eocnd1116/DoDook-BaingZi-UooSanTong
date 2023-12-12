@@ -54,6 +54,9 @@ int selecter = 0;
 int targetNum = -1;
 int pwdCheak=0;
 
+int afterPpT=0;
+int afterTN=0;
+
 String outPwd="";
 
 
@@ -63,6 +66,9 @@ String outPwd="";
 void setup() {
   // 시리얼 모니터 //
   Serial.begin(9600);
+
+  // 부저 //
+  pinMode(8, OUTPUT);
 
   // 압력센서 pinMode //
   for ( int i=54; i<=59; i++) { pinMode(i, INPUT); } 
@@ -118,17 +124,27 @@ void loop() {
       }
     }
   }
-  if ( dpType==5 ) { //Out
+  if ( dpType!=4 ) { //Out
     for ( int i=54; i<=59; i++) {
       if ( pp_onf[i-54] != pp_list[i-54] && pp_onf[i-54]==true ) {
-        outPwd="";
-        selecter=0;
-        dpTC=6;
-        targetNum=i-54;
-        timer=10;
+        tone(8, 240);
+        timer=999;
         rTimer=0;
-        Serial.println("PRESS:dpTC chaged 6.  ( '"+String(i-54)+"' cheaking )");
+        dpTC=9;
+        afterPpT=dpType;
+        afterTN=i-54;
       }
+    }
+  }
+  if ( dpType==9 ) {
+    if ( pp_list[afterTN] ) {
+      Serial.println("adasdadssad");
+      noTone(8);
+      timer=10;
+      rTimer=0;
+      dpTC=afterPpT;
+      afterPpT=0;
+      afterTN=0;
     }
   }
   
@@ -162,6 +178,8 @@ void loop() {
       case 6:
         lcd.setCursor(0, 0);
         lcd.print("Password.("+String(targetNum+1)+")");
+        lcd.setCursor(1, 1);
+        lcd.print("               ");
         break;
       case 4:
         lcd.setCursor(0, 0);
@@ -183,6 +201,12 @@ void loop() {
         lcd.setCursor(0, 0);
         lcd.print("No Umbrella..");
         break;
+      case 9:
+        lcd.setCursor(0, 0);
+        lcd.print("FUCKING LOST");
+        lcd.setCursor(0, 1);
+        lcd.print("UMBRELLA " + String(targetNum+1));
+        break;
     }
     dpType = dpTC;
   }
@@ -195,6 +219,13 @@ void loop() {
       rTimer++;
     }
     else {
+      if ( dpType==3 ) {
+        pp_pwd[targetNum]="";
+      }
+      if ( dpType==6 ) {
+        outPwd="";
+      }
+      targetNum=-1;
       rTimer=0;
       dpTC=0;
       Serial.println("DISPLAY:dpTC chaged 0.  ( time out )");
@@ -385,5 +416,4 @@ void loop() {
       lcd.print(pp_pwd[targetNum]);
     }
   }
-    Serial.println(pp_list[4]);
 }
