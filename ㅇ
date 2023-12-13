@@ -1,0 +1,195 @@
+from turtle import *
+from time import *
+
+ht()
+up()
+title("IDLE Shell 3.12.1")
+
+texting=""
+yy=370
+kang=0
+def draw(text):
+    global yy
+    goto(-470, yy)
+    write(text, font=("돋움체", 20))
+    yy-=25
+def redraw():
+    global yy
+    yy+=25
+    undo()
+    draw(texting)
+def q():
+    global texting
+    texting+="q"
+    redraw()
+def w(): 
+    global texting
+    texting+="w"
+    redraw()
+def e(): 
+    global texting
+    texting+="e"
+    redraw()
+def r(): 
+    global texting
+    texting+="r"
+    redraw()
+def t(): 
+    global texting
+    texting+="t"
+    redraw()
+def y(): 
+    global texting
+    texting+="y"
+    redraw()
+def u(): 
+    global texting
+    texting+="u"
+    redraw()
+def i(): 
+    global texting
+    texting+="i"
+    redraw()
+def o(): 
+    global texting
+    texting+="o"
+    redraw()
+def p(): 
+    global texting
+    texting+="p"
+    redraw()
+def a(): 
+    global texting
+    texting+="a"
+    redraw()
+def s(): 
+    global texting
+    texting+="s"
+    redraw()
+def d(): 
+    global texting
+    texting+="d"
+    redraw()
+def f(): 
+    global texting
+    texting+="f"
+    redraw()
+def g(): 
+    global texting
+    texting+="g"
+    redraw()
+def h(): 
+    global texting
+    texting+="h"
+    redraw()
+def j(): 
+    global texting
+    texting+="j"
+    redraw()
+def k(): 
+    global texting
+    texting+="k"
+    redraw()
+def l(): 
+    global texting
+    texting+="l"
+    redraw()
+def z(): 
+    global texting
+    texting+="z"
+    redraw()
+def x(): 
+    global texting
+    texting+="x"
+    redraw()
+def c(): 
+    global texting
+    texting+="c"
+    redraw()
+def v(): 
+    global texting
+    texting+="v"
+    redraw()
+def b(): 
+    global texting
+    texting+="b"
+    redraw()
+def n(): 
+    global texting
+    texting+="n"
+    redraw()
+def m(): 
+    global texting
+    texting+="m"
+    redraw()
+def space(): 
+    global texting
+    texting+=" "
+    redraw()
+def star(): 
+    global texting
+    texting+="*"
+    redraw()
+def bs(): 
+    global texting
+    texting=texting[0:len(texting)-1]
+    redraw()
+def enter():
+    global kang
+    print("dsaasddsaasd")
+    kang=1
+
+draw("Python 3.12.1 (tags/v3.12.1:2305ca5, Dec  7 2023, 22:03:25) [MSC v.")
+draw("1937 64 bit (AMD64)] on win32")
+draw("Type \"help\", \"copyright\", \"credits\" or \"license()\" for more informa")
+draw("tion.")
+draw("")
+
+
+draw("명령어를 입력해라")
+
+
+onkeypress(q,"q")
+onkeypress(w,"w")
+onkeypress(e,"e")
+onkeypress(r,"r")
+onkeypress(t,"t")
+onkeypress(y,"y")
+onkeypress(u,"u")
+onkeypress(i,"i")
+onkeypress(o,"o")
+onkeypress(p,"p")
+onkeypress(a,"a")
+onkeypress(s,"s")
+onkeypress(d,"d")
+onkeypress(f,"f")
+onkeypress(g,"g")
+onkeypress(h,"h")
+onkeypress(j,"j")
+onkeypress(k,"k")
+onkeypress(l,"l")
+onkeypress(z,"z")
+onkeypress(x,"x")
+onkeypress(c,"c")
+onkeypress(v,"v")
+onkeypress(b,"b")
+onkeypress(n,"n")
+onkeypress(m,"m")
+onkeypress(space," ")
+onkeypress(star,"*")
+onkeypress(bs,"BackSpace")
+onkeypress(enter,"Return")
+listen()
+
+if kang>0:
+    print(kang)
+    while True:
+        if kang==1:
+            kang=2
+            bgcolor("yellow")
+        if kang==2:
+            kang=1
+            bgcolor("orange")
+        print("ddd")
+        sleep(0.4)
+ㅇㅇ
